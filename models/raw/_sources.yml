@@ -1,0 +1,9 @@
+version: 2
+ 
+sources:
+  - name: tpch_sf1
+    database: "WORKSHOP_{{ env_var('DBT_ENVIRONMENT') }}_RAW"
+    schema: tpch_sf1
+    tables:
+      - name: customer
+        description: "Tabla que contiene la información de cliente."
