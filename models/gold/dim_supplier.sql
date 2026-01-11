@@ -1,21 +1,28 @@
 with silver as (
 
     select *
-    from {{ ref('customer') }}
+
+    from {{ ref('supplier') }}
 
 )
 
 
 select distinct
 
-    id_customer
+    id_supplier
+
     , id_nation
-    , customer_name
-    , customer_address
-    , customer_phone
+
+    , supplier_name
+
+    , supplier_address
+
+    , supplier_phone
+
     , account_balance_usd
-    , marketing_segment
-    , customer_comment
+
+    , supplier_comment
+
     , convert_timezone('UTC', current_timestamp()) as staged_at_utc
 
 from silver
