@@ -1,6 +1,18 @@
+{{ config(
+    materialized = 'incremental',
+    unique_key = 'id_lineitem',
+    on_schema_change = 'fail',
+) }}
+
 with stg_lineitem as (
     select *
     from {{ ref('stg_tpch_sf1__lineitem') }}
+    {% if is_incremental() %}
+      where loaded_at_utc > (
+        select coalesce(max(loaded_at_utc), '1900-01-01'::timestamp)
+        from {{ this }}
+      )
+    {% endif %}
 )
 
 , lineitem as (
