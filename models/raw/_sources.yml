@@ -2,167 +2,299 @@ version: 2
 
 sources:
   - name: tpch_sf1
+    description: "TPC-H sample dataset at scale factor 1 (SF1)"
     database: "WORKSHOP_{{ env_var('DBT_ENVIRONMENT') }}_RAW"
     schema: tpch_sf1
+
     tables:
       - name: customer
+        description: "Customers in the TPC-H dataset"
+        tests:
+          - dbt_expectations.expect_table_row_count_to_be_between:
+              min_value: 1
         columns:
           - name: c_custkey
+            description: "Primary key"
             data_type: number
+            tests: [not_null, unique]
           - name: c_name
+            description: "Customer name"
             data_type: varchar
+            tests: [not_null]
           - name: c_address
+            description: "Customer address"
             data_type: varchar
           - name: c_nationkey
+            description: "Foreign key to nation"
             data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'nation')
+                  field: n_nationkey
           - name: c_phone
+            description: "Customer phone number"
             data_type: varchar
           - name: c_acctbal
+            description: "Customer account balance"
             data_type: number
           - name: c_mktsegment
+            description: "Market segment"
             data_type: varchar
           - name: c_comment
+            description: "Free-form comment"
             data_type: varchar
           - name: loaded_at
-            data_type: timestamp_tz
-
-      - name: lineitem
-        columns:
-          - name: l_orderkey
-            data_type: number
-          - name: l_partkey
-            data_type: number
-          - name: l_suppkey
-            data_type: number
-          - name: l_linenumber
-            data_type: number
-          - name: l_quantity
-            data_type: number
-          - name: l_extendedprice
-            data_type: number
-          - name: l_discount
-            data_type: number
-          - name: l_tax
-            data_type: number
-          - name: l_returnflag
-            data_type: varchar
-          - name: l_linestatus
-            data_type: varchar
-          - name: l_shipdate
-            data_type: date
-          - name: l_commitdate
-            data_type: date
-          - name: l_receiptdate
-            data_type: date
-          - name: l_shipinstruct
-            data_type: varchar
-          - name: l_shipmode
-            data_type: varchar
-          - name: l_comment
-            data_type: varchar
-          - name: loaded_at
-            data_type: timestamp_tz
-
-      - name: nation
-        columns:
-          - name: n_nationkey
-            data_type: number
-          - name: n_name
-            data_type: varchar
-          - name: n_regionkey
-            data_type: number
-          - name: n_comment
-            data_type: varchar
-          - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
             data_type: timestamp_tz
 
       - name: orders
+        description: "Orders placed by customers"
         columns:
           - name: o_orderkey
+            description: "Primary key"
             data_type: number
+            tests: [not_null, unique]
           - name: o_custkey
+            description: "Foreign key to customer"
             data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'customer')
+                  field: c_custkey
           - name: o_orderstatus
+            description: "Order status flag"
             data_type: varchar
+            tests:
+              - accepted_values:
+                  values: ["F", "O", "P"]
           - name: o_totalprice
+            description: "Total price of the order"
             data_type: number
           - name: o_orderdate
+            description: "Order date"
             data_type: date
           - name: o_orderpriority
+            description: "Order priority"
             data_type: varchar
           - name: o_clerk
+            description: "Clerk identifier"
             data_type: varchar
           - name: o_shippriority
+            description: "Shipping priority"
             data_type: number
           - name: o_comment
+            description: "Free-form comment"
             data_type: varchar
           - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
+            data_type: timestamp_tz
+
+      - name: lineitem
+        description: "Line items within orders"
+        columns:
+          - name: l_orderkey
+            description: "Foreign key to orders"
+            data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'orders')
+                  field: o_orderkey
+          - name: l_partkey
+            description: "Foreign key to part"
+            data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'part')
+                  field: p_partkey
+          - name: l_suppkey
+            description: "Foreign key to supplier"
+            data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'supplier')
+                  field: s_suppkey
+          - name: l_linenumber
+            description: "Line number within the order"
+            data_type: number
+          - name: l_quantity
+            description: "Quantity ordered"
+            data_type: number
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: 1
+                  max_value: 50
+          - name: l_extendedprice
+            description: "Extended price (before discount/tax)"
+            data_type: number
+          - name: l_discount
+            description: "Discount percentage"
+            data_type: number
+          - name: l_tax
+            description: "Tax percentage"
+            data_type: number
+          - name: l_returnflag
+            description: "Return flag"
+            data_type: varchar
+          - name: l_linestatus
+            description: "Line status"
+            data_type: varchar
+          - name: l_shipdate
+            description: "Shipping date"
+            data_type: date
+          - name: l_commitdate
+            description: "Commit date"
+            data_type: date
+          - name: l_receiptdate
+            description: "Receipt date"
+            data_type: date
+          - name: l_shipinstruct
+            description: "Shipping instructions"
+            data_type: varchar
+          - name: l_shipmode
+            description: "Shipping mode"
+            data_type: varchar
+          - name: l_comment
+            description: "Free-form comment"
+            data_type: varchar
+          - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
             data_type: timestamp_tz
 
       - name: part
+        description: "Parts that can be ordered"
         columns:
           - name: p_partkey
+            description: "Primary key"
             data_type: number
+            tests: [not_null, unique]
           - name: p_name
+            description: "Part name"
             data_type: varchar
           - name: p_mfgr
+            description: "Manufacturer"
             data_type: varchar
           - name: p_brand
+            description: "Brand"
             data_type: varchar
           - name: p_type
+            description: "Part type"
             data_type: varchar
           - name: p_size
+            description: "Part size"
             data_type: number
           - name: p_container
+            description: "Container type"
             data_type: varchar
           - name: p_retailprice
+            description: "Retail price"
             data_type: number
           - name: p_comment
+            description: "Free-form comment"
             data_type: varchar
           - name: loaded_at
-            data_type: timestamp_tz
-
-      - name: partsupp
-        columns:
-          - name: ps_partkey
-            data_type: number
-          - name: ps_suppkey
-            data_type: number
-          - name: ps_availqty
-            data_type: number
-          - name: ps_supplycost
-            data_type: number
-          - name: ps_comment
-            data_type: varchar
-          - name: loaded_at
-            data_type: timestamp_tz
-
-      - name: region
-        columns:
-          - name: r_regionkey
-            data_type: number
-          - name: r_name
-            data_type: varchar
-          - name: r_comment
-            data_type: varchar
-          - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
             data_type: timestamp_tz
 
       - name: supplier
+        description: "Suppliers providing parts"
         columns:
           - name: s_suppkey
+            description: "Primary key"
             data_type: number
+            tests: [not_null, unique]
           - name: s_name
+            description: "Supplier name"
             data_type: varchar
           - name: s_address
+            description: "Supplier address"
             data_type: varchar
           - name: s_nationkey
+            description: "Foreign key to nation"
             data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'nation')
+                  field: n_nationkey
           - name: s_phone
+            description: "Supplier phone number"
             data_type: varchar
           - name: s_acctbal
+            description: "Supplier account balance"
             data_type: number
           - name: s_comment
+            description: "Free-form comment"
             data_type: varchar
           - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
+            data_type: timestamp_tz
+
+      - name: partsupp
+        description: "Parts supplied by suppliers"
+        columns:
+          - name: ps_partkey
+            description: "Foreign key to part"
+            data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'part')
+                  field: p_partkey
+          - name: ps_suppkey
+            description: "Foreign key to supplier"
+            data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'supplier')
+                  field: s_suppkey
+          - name: ps_availqty
+            description: "Available quantity"
+            data_type: number
+          - name: ps_supplycost
+            description: "Supply cost"
+            data_type: number
+          - name: ps_comment
+            description: "Free-form comment"
+            data_type: varchar
+          - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
+            data_type: timestamp_tz
+
+      - name: nation
+        description: "Nations in TPC-H"
+        columns:
+          - name: n_nationkey
+            description: "Primary key"
+            data_type: number
+            tests: [not_null, unique]
+          - name: n_name
+            description: "Nation name"
+            data_type: varchar
+          - name: n_regionkey
+            description: "Foreign key to region"
+            data_type: number
+            tests:
+              - relationships:
+                  to: source('tpch_sf1', 'region')
+                  field: r_regionkey
+          - name: n_comment
+            description: "Free-form comment"
+            data_type: varchar
+          - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
+            data_type: timestamp_tz
+
+      - name: region
+        description: "Regions grouping nations"
+        columns:
+          - name: r_regionkey
+            description: "Primary key"
+            data_type: number
+            tests: [not_null, unique]
+          - name: r_name
+            description: "Region name"
+            data_type: varchar
+          - name: r_comment
+            description: "Free-form comment"
+            data_type: varchar
+          - name: loaded_at
+            description: "UTC timestamp of when the data was loaded"
             data_type: timestamp_tz
