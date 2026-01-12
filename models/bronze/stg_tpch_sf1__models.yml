@@ -235,4 +235,4 @@ models:
       - name: dbt_cloud_run_id
         description: "dbt Cloud run id."
       - name: dbt_cloud_job_id
-        description: "dbt Cloud job id."
+        description: "{{ doc('dbt_cloud_job_id') }}"
