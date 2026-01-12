@@ -133,6 +133,12 @@ models:
 
   - name: fct_order_items
     description: "Fact table at order line grain; metrics and hashed FKs to conformed dimensions."
+    tests:
+      - if_then:
+          name: ship_date_not_before_order_date
+          arguments:
+            if_condition: "ship_date is not null"
+            then_condition: "ship_date >= order_date"
     columns:
       - name: id_lineitem
         description: "Surrogate key for line item (hash of order_number & line_number)."

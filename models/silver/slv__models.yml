@@ -37,6 +37,12 @@ models:
 
   - name: orders
     description: "Silver of TPCH orders."
+    tests:
+      - if_then:
+          name: order_status_f_implies_fulfilled
+          arguments:
+            if_condition: "order_status = 'F'"
+            then_condition: "is_fulfilled = true"
     columns:
       - name: id_order
         description: "Surrogate key (hash of order_key)."
