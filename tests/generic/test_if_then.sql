@@ -1,4 +1,4 @@
-{% test if_then(model, if_condition, then_condition) -%}
+{% test test_if_then(model, if_condition, then_condition) -%}
 
 select *
 from {{ model }}

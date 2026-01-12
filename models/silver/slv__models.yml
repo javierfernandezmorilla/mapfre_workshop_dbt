@@ -38,7 +38,7 @@ models:
   - name: orders
     description: "Silver of TPCH orders."
     tests:
-      - if_then:
+      - test_if_then:
           name: order_status_f_implies_fulfilled
           arguments:
             if_condition: "order_status = 'F'"

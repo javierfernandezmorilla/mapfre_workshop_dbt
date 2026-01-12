@@ -4,7 +4,7 @@ models:
   - name: plt_order_items
     description: "Platinum model built from fct_order_items, adding a business classification (plt_order_size) derived from net_revenue_usd."
     tests:
-      - if_then:
+      - test_if_then:
           name: null_revenue_implies_unknown_size
           arguments:
             if_condition: "net_revenue_usd is null"
