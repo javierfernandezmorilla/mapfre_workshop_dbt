@@ -33,3 +33,21 @@ models:
               values: ["PEQUEÑA", "NORMAL", "GRANDE", "DESCONOCIDA"]
       - name: staged_at_utc
         description: "Build timestamp (UTC)."
+
+unit_tests:
+  - name: ut_plt_order_items_order_size
+    model: plt_order_items
+    given:
+      - input: ref('fct_order_items')
+        rows:
+          - {id_lineitem: 1, net_revenue_usd: 50}
+          - {id_lineitem: 2, net_revenue_usd: 1500}
+          - {id_lineitem: 3, net_revenue_usd: 6000}
+          - {id_lineitem: 4, net_revenue_usd: null}
+    expect:
+      rows:
+        - {id_lineitem: 1, plt_order_size: "PEQUEÑA"}
+        - {id_lineitem: 2, plt_order_size: "NORMAL"}
+        - {id_lineitem: 3, plt_order_size: "GRANDE"}
+        - {id_lineitem: 4, plt_order_size: "DESCONOCIDA"}
+ 
