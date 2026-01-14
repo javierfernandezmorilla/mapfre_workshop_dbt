@@ -3,6 +3,10 @@ version: 2
 models:
   - name: customer
     description: "Silver of TPCH customer: surrogate keys, cleaned fields and audit columns."
+    config:
+      meta:
+        owner: "jfm"
+        contains_pii: true
     columns:
       - name: id_customer
         description: "Surrogate key (hash of customer_key)."
