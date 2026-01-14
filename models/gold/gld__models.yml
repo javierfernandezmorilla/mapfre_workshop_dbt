@@ -3,6 +3,7 @@ version: 2
 models:
   - name: dim_customer
     description: "Customer dimension built from Silver customer (conformed with nation via hashed ids)."
+    latest_version: 2
     config:
       contract:
         enforced: true
@@ -49,6 +50,30 @@ models:
       - name: staged_at_utc
         description: "Build timestamp (UTC)."
         data_type: timestamp_tz
+
+    versions:
+      - v: 1
+
+      - v: 2
+        config:
+          alias: dim_customer
+        columns:
+          - include: all
+          - name: customer_tier
+            description: "Tier derived from account_balance_usd (gold/silver/bronze)."
+            data_type: varchar(20)
+            tests:
+              - not_null
+
+      - v: 3
+        columns:
+          - include: all
+            exclude: [customer_tier]
+          - name: customer_category
+            description: "Renamed from v2 'customer_tier'; same derivation."
+            data_type: varchar(20)
+            tests:
+              - not_null
 
   - name: dim_part
     description: "Part dimension built from Silver part."
