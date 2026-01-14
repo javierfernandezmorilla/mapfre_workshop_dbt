@@ -3,31 +3,52 @@ version: 2
 models:
   - name: dim_customer
     description: "Customer dimension built from Silver customer (conformed with nation via hashed ids)."
+    config:
+      contract:
+        enforced: true
+
     columns:
       - name: id_customer
         description: "Surrogate key (hash of customer natural key)."
+        data_type: varchar(32)
         tests: [not_null, unique]
+
       - name: id_nation
         description: "FK to dim_nation.id_nation."
+        data_type: varchar(32)
         tests:
           - not_null
           - relationships:
               to: ref('dim_nation')
               field: id_nation
+
       - name: customer_name
         description: "Customer full name."
+        data_type: varchar
+
       - name: customer_address
         description: "Customer address."
+        data_type: varchar
+
       - name: customer_phone
         description: "Customer phone."
+        data_type: varchar
+
       - name: account_balance_usd
         description: "Account balance in USD."
+        data_type: number(12,2)
+
       - name: marketing_segment
         description: "Marketing segment."
+        data_type: varchar
+
       - name: customer_comment
         description: "Free text comment."
+        data_type: varchar
+
       - name: staged_at_utc
         description: "Build timestamp (UTC)."
+        data_type: timestamp_tz
 
   - name: dim_part
     description: "Part dimension built from Silver part."
