@@ -1,0 +1,9 @@
+version: 2
+
+macros:
+  - name: test_if_then
+    description: >
+      Test genérico reutilizable: si se cumple una condición (if_condition),
+      entonces debe cumplirse otra (then_condition). El test falla si existen filas
+      donde if_condition es true y then_condition es false.
+ 

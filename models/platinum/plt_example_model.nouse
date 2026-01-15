@@ -1,0 +1,12 @@
+with gold as (
+
+    select *
+    from {{ ref('dim_nation') }}
+
+)
+
+
+select
+    *
+
+from gold

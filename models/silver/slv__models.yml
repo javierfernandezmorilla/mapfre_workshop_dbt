@@ -1,0 +1,292 @@
+version: 2
+
+models:
+  - name: customer
+    description: "Silver of TPCH customer: surrogate keys, cleaned fields and audit columns."
+    config:
+      meta:
+        owner: "jfm"
+        contains_pii: true
+    columns:
+      - name: id_customer
+        description: "Surrogate key (hash of customer_key)."
+        tests: [not_null, unique]
+      - name: id_nation
+        description: "Surrogate FK to nation (hash of nation_key)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('nation')
+              field: id_nation
+      - name: customer_key
+        description: "Natural key from source (c_custkey)."
+      - name: nation_key
+        description: "Natural FK from source (c_nationkey)."
+      - name: customer_name
+        description: "Customer name."
+      - name: customer_address
+        description: "Customer address."
+      - name: customer_phone
+        description: "Customer phone."
+      - name: account_balance_usd
+        description: "Account balance in USD."
+      - name: marketing_segment
+        description: "Marketing segment."
+      - name: customer_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."
+
+  - name: orders
+    description: "Silver of TPCH orders."
+    tests:
+      - test_if_then:
+          name: order_status_f_implies_fulfilled
+          arguments:
+            if_condition: "order_status = 'F'"
+            then_condition: "is_fulfilled = true"
+    columns:
+      - name: id_order
+        description: "Surrogate key (hash of order_key)."
+        tests: [not_null, unique]
+      - name: id_customer
+        description: "Surrogate FK to customer (hash of customer_key)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('customer')
+              field: id_customer
+      - name: order_key
+        description: "Natural key from source (o_orderkey)."
+      - name: customer_key
+        description: "Natural FK from source (o_custkey)."
+      - name: order_status
+        description: "Order status code (F/O/P)."
+        tests:
+          - accepted_values:
+              values: ["F", "O", "P"]
+      - name: is_fulfilled
+        description: "Derived flag (order_status='F')."
+      - name: order_date_utc
+        description: "Order date (UTC suffix by convention)."
+        tests: [not_null]
+      - name: total_price_usd
+        description: "Total order price in USD."
+      - name: order_priority
+        description: "Order priority."
+      - name: order_clerk
+        description: "Clerk identifier."
+      - name: ship_priority_rank
+        description: "Shipping priority rank."
+      - name: order_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."
+
+  - name: lineitem
+    description: "Silver of TPCH line items."
+    columns:
+      - name: id_lineitem
+        description: "Surrogate key (hash of order_number,line_number)."
+        tests: [not_null, unique]
+      - name: id_order
+        description: "Surrogate FK to orders (hash of order_number)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('orders')
+              field: id_order
+      - name: id_part
+        description: "Surrogate FK to part (hash of part_number)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('part')
+              field: id_part
+      - name: id_supplier
+        description: "Surrogate FK to supplier (hash of supplier_number)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('supplier')
+              field: id_supplier
+      - name: order_number
+        description: "Natural FK to orders from source (l_orderkey)."
+      - name: line_number
+        description: "Line number within the order."
+        tests: [not_null]
+      - name: part_number
+        description: "Natural FK to part from source (l_partkey)."
+      - name: supplier_number
+        description: "Natural FK to supplier from source (l_suppkey)."
+      - name: quantity_qty
+        description: "Ordered quantity."
+      - name: extended_price_usd
+        description: "Extended price in USD (prediscount/pretax)."
+      - name: discount_pct
+        description: "Discount percentage."
+      - name: tax_pct
+        description: "Tax percentage."
+      - name: return_flag
+        description: "Return flag."
+      - name: line_status
+        description: "Line status."
+      - name: ship_date_utc
+        description: "Ship date."
+      - name: commit_date_utc
+        description: "Commit date."
+      - name: receipt_date_utc
+        description: "Receipt date."
+      - name: ship_instructions
+        description: "Shipping instructions."
+      - name: ship_mode
+        description: "Shipping mode."
+      - name: line_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."
+
+  - name: part
+    description: "Silver of TPCH parts."
+    columns:
+      - name: id_part
+        description: "Surrogate key (hash of part_key)."
+        tests: [not_null, unique]
+      - name: part_key
+        description: "Natural key from source (p_partkey)."
+      - name: part_name
+        description: "Part name."
+      - name: manufacturer
+        description: "Manufacturer."
+      - name: brand
+        description: "Brand."
+      - name: part_type
+        description: "Part type."
+      - name: size_qty
+        description: "Size quantity."
+      - name: container_type
+        description: "Container type."
+      - name: retail_price_usd
+        description: "Retail price in USD."
+      - name: part_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."
+
+  - name: supplier
+    description: "Silver of TPCH suppliers."
+    columns:
+      - name: id_supplier
+        description: "Surrogate key (hash of supplier_key)."
+        tests: [not_null, unique]
+      - name: id_nation
+        description: "Surrogate FK to nation (hash of nation_key)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('nation')
+              field: id_nation
+      - name: supplier_key
+        description: "Natural key from source (s_suppkey)."
+      - name: nation_key
+        description: "Natural FK from source (s_nationkey)."
+      - name: supplier_name
+        description: "Supplier name."
+      - name: supplier_address
+        description: "Supplier address."
+      - name: supplier_phone
+        description: "Supplier phone."
+      - name: account_balance_usd
+        description: "Account balance in USD."
+      - name: supplier_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."
+
+  - name: partsupp
+    description: "Silver of TPCH part–supplier bridge."
+    columns:
+      - name: id_partsupp
+        description: "Surrogate key (hash of part_key,supplier_key)."
+        tests: [not_null, unique]
+      - name: id_part
+        description: "Surrogate FK to part (hash of part_key)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('part')
+              field: id_part
+      - name: id_supplier
+        description: "Surrogate FK to supplier (hash of supplier_key)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('supplier')
+              field: id_supplier
+      - name: part_key
+        description: "Natural FK to part from source (ps_partkey)."
+      - name: supplier_key
+        description: "Natural FK to supplier from source (ps_suppkey)."
+      - name: available_qty
+        description: "Available quantity."
+      - name: supply_cost_usd
+        description: "Supply cost in USD."
+      - name: partsupp_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."
+
+  - name: nation
+    description: "Silver of TPCH nations."
+    columns:
+      - name: id_nation
+        description: "Surrogate key (hash of nation_key)."
+        tests: [not_null, unique]
+      - name: id_region
+        description: "Surrogate FK to region (hash of region_key)."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('region')
+              field: id_region
+      - name: nation_key
+        description: "Natural key from source (n_nationkey)."
+      - name: region_key
+        description: "Natural FK from source (n_regionkey)."
+      - name: nation_name
+        description: "Nation name."
+      - name: nation_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."
+
+  - name: region
+    description: "Silver of TPCH regions."
+    columns:
+      - name: id_region
+        description: "Surrogate key (hash of region_key)."
+        tests: [not_null, unique]
+      - name: region_key
+        description: "Natural key from source (r_regionkey)."
+      - name: region_name
+        description: "Region name."
+      - name: region_comment
+        description: "Free text comment."
+      - name: loaded_at_utc
+        description: "Ingestion timestamp (UTC)."
+      - name: staged_at_utc
+        description: "Silver processing timestamp (UTC)."

@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: plt_order_items
+    description: "Platinum model built from fct_order_items, adding a business classification (plt_order_size) derived from net_revenue_usd."
+    tests:
+      - test_if_then:
+          name: null_revenue_implies_unknown_size
+          arguments:
+            if_condition: "net_revenue_usd is null"
+            then_condition: "plt_order_size = 'DESCONOCIDA'"
+    columns:
+      - name: id_lineitem
+        description: "Line item surrogate key."
+      - name: id_order
+        description: "Order surrogate key."
+      - name: id_part
+        description: "Part surrogate key."
+      - name: id_supplier
+        description: "Supplier surrogate key."
+      - name: id_ship_mode
+        description: "Ship mode surrogate key."
+      - name: order_date
+        description: "Order date (DATE)."
+      - name: quantity_qty
+        description: "Ordered quantity."
+      - name: net_revenue_usd
+        description: "Net revenue (gross - discount + tax)."
+      - name: plt_order_size
+        description: "Business classification from net_revenue_usd using plt_order_size(): PEQUEÑA (<1000), NORMAL (>=1000), GRANDE (>=5000), DESCONOCIDA (NULL)."
+        tests:
+          - accepted_values:
+              values: ["PEQUEÑA", "NORMAL", "GRANDE", "DESCONOCIDA"]
+      - name: staged_at_utc
+        description: "Build timestamp (UTC)."
+
+unit_tests:
+  - name: ut_plt_order_items_order_size
+    model: plt_order_items
+    given:
+      - input: ref('fct_order_items')
+        rows:
+          - { id_lineitem: 1, net_revenue_usd: 50 }
+          - { id_lineitem: 2, net_revenue_usd: 1500 }
+          - { id_lineitem: 3, net_revenue_usd: 6000 }
+          - { id_lineitem: 4, net_revenue_usd: null }
+    expect:
+      rows:
+        - { id_lineitem: 1, plt_order_size: "PEQUEÑA" }
+        - { id_lineitem: 2, plt_order_size: "NORMAL" }
+        - { id_lineitem: 3, plt_order_size: "GRANDE" }
+        - { id_lineitem: 4, plt_order_size: "DESCONOCIDA" }
+
+exposures:
+  - name: dashboard_plt
+    depends_on:
+      - ref('plt_order_items')
+    type: dashboard
+    description: "Dashboard de análisis de ventas."
+    owner:
+      name: "Equipo BI"
+      email: "bi@company.com"
