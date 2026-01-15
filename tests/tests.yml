@@ -1,0 +1,8 @@
+version: 2
+
+data_tests:
+  - name: fct_order_items_revenue_math
+    description: >
+      Test singular sobre `fct_order_items` que valida que net_revenue_usd coincide con
+      gross_revenue_usd - discount_amount_usd + tax_amount_usd, con tolerancia de 0.01.
+      El test falla si devuelve filas (NULLs o diferencia > 0.01).
