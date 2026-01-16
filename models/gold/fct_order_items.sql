@@ -131,4 +131,6 @@ select
 
     , (extended_price_usd - (extended_price_usd * discount_pct) + ((extended_price_usd - (extended_price_usd * discount_pct)) * tax_pct)) as net_revenue_usd
 
+    , 'columna' as columna
+
 from base
